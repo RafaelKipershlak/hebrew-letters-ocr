@@ -3,8 +3,10 @@ import os
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
-from PIL import Image, ImageOps
+from PIL import Image
 import matplotlib.pyplot as plt
+import cv2
+import numpy as np
 
 # ==========================================
 # 1. Hardcoded Dictionary 
@@ -34,28 +36,54 @@ class HebrewOCRModel(nn.Module):
         return x
 
 # ==========================================
-# 3. Smart Preprocessing (Aspect Ratio + Padding)
+# 3. Smart Preprocessing (OpenCV Auto-Crop & Binarization)
 # ==========================================
-def process_image_keep_aspect_ratio(image_path):
+def process_real_world_image_cv2(image_path):
     """
-    Resizes the image to fit within 64x64 while maintaining its original aspect ratio.
-    Pads the remaining space with white pixels (255) to prevent distortion.
+    Advanced Preprocessing for real-world images:
+    1. Grayscale & Dynamic Binarization.
+    2. Contour detection to find and crop the actual ink (Auto-Crop).
+    3. Resizes to font scale and pads centrally on a 64x64 white canvas.
     """
-    img = Image.open(image_path).convert('L') # Convert to grayscale
+    # 1. Read image in Grayscale using OpenCV
+    img_cv = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img_cv is None:
+        raise ValueError(f"Image not found or unable to load: {image_path}")
+
+    # 2. Binarize (Inverted: Background=0, Ink=255 for contour detection)
+    _, thresh = cv2.threshold(img_cv, 128, 255, cv2.THRESH_BINARY_INV)
+
+    # 3. Find Contours (Blobs of ink)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if contours:
+        # 4. Find the LARGEST contour (ignoring tiny noise dots)
+        largest_contour = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(largest_contour)
+        
+        # Crop exactly around the largest ink blob (revert to normal: Black ink on White)
+        letter_crop = img_cv[y:y+h, x:x+w]
+        
+        # Ensure binarization of the crop (White background, Black ink)
+        _, final_crop = cv2.threshold(letter_crop, 128, 255, cv2.THRESH_BINARY)
+    else:
+        # Fallback if somehow no ink is found
+        _, final_crop = cv2.threshold(img_cv, 128, 255, cv2.THRESH_BINARY)
+
+    # 5. Convert to PIL Image for Resizing and Padding
+    pil_img = Image.fromarray(final_crop)
     
-    # 1. Resize while keeping aspect ratio
-    img.thumbnail((64, 64), Image.Resampling.LANCZOS)
+    # Resize to font scale (leave some white margin)
+    desired_font_scale = 44 
+    pil_img.thumbnail((desired_font_scale, desired_font_scale), Image.Resampling.LANCZOS)
     
-    # 2. Create a blank white 64x64 canvas
-    background = Image.new('L', (64, 64), 255) 
+    # Paste on 64x64 white canvas
+    canvas = Image.new('L', (64, 64), 255)
+    offset = ((64 - pil_img.width) // 2, (64 - pil_img.height) // 2)
+    canvas.paste(pil_img, offset)
     
-    # 3. Paste the resized image into the center of the canvas
-    offset = ((64 - img.width) // 2, (64 - img.height) // 2)
-    background.paste(img, offset)
-    
-    # 4. Convert to Tensor
-    tensor_img = T.ToTensor()(background).unsqueeze(0)
-    return tensor_img, background
+    tensor_img = T.ToTensor()(canvas).unsqueeze(0)
+    return tensor_img, canvas
 
 # ==========================================
 # 4. Prediction Function
@@ -77,8 +105,13 @@ def predict_image(image_path, model_path):
     model = model.to(device)
     model.eval()
 
-    # Smart Preprocessing
-    img_tensor, img_visual = process_image_keep_aspect_ratio(image_path)
+    # Smart Preprocessing (OpenCV)
+    try:
+        img_tensor, img_visual = process_real_world_image_cv2(image_path)
+    except Exception as e:
+        print(f"❌ Preprocessing Error: {e}")
+        return
+        
     img_tensor = img_tensor.to(device)
 
     # Inference with Confidence Score
@@ -107,8 +140,8 @@ def predict_image(image_path, model_path):
     plt.title(title_text, fontsize=18, color='darkblue')
     plt.axis('off')
     
-    # Adds a small subtitle to explain this is the processed input
-    plt.suptitle("Model Input (Padded to 64x64)", fontsize=10, color='gray', y=0.05)
+    # Updated subtitle to match the new processing
+    plt.suptitle("Model Input (Binarized & Auto-Cropped)", fontsize=10, color='gray', y=0.05)
     plt.show()
 
 # ==========================================
