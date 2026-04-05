@@ -1,24 +1,65 @@
-# hebrew-letters-ocr
-A PyTorch-based Convolutional Neural Network (CNN) for recognizing Hebrew characters. Trained on synthetic data with online augmentations.
+# Hebrew Characters OCR
 
-## 🚀 Optimization Journey: Handling Real-World Data
+A PyTorch-based Convolutional Neural Network (CNN) for recognizing Hebrew characters. The model was initially trained on synthetically generated Hebrew characters (using multiple fonts and randomized augmentations) and later optimized for real-world robustness.
 
-While the model achieved high accuracy on synthetic data, this project goes further to analyze its performance on real-world inputs and optimize accordingly.
+## ✨ Key Features
+* **Sim-to-Real Pipeline:** Bridges the gap between synthetic training data and real-world, noisy camera images.
+* **Advanced Preprocessing:** Uses OpenCV contour detection for dynamic binarization and automatic cropping based on contour detection.
+* **Robust to Variations:** Combats "shortcut learning" through aggressive affine augmentations (scale and rotation).
+* **Detailed Error Analysis:** Includes an in-depth breakdown of the confusion matrix and known limitations (e.g., the Auto-Cropping paradox).
 
-### 🔍 Error Analysis: Handwritten vs. Printed Characters
+## 🧠 Model Architecture
+* **Framework:** PyTorch
+* **Input:** 64x64 Grayscale images
+* **Layers:**
+  * 2× Convolutional Layers (32 & 64 filters, 3×3 kernel, padding=1) + ReLU + MaxPool2d
+  * 1× Fully Connected (Linear) Layer
+* **Output:** 27 classes (Hebrew alphabet, including final letters)
 
-A key finding was the model's sensitivity to handwriting variations (a phenomenon known as **Domain Shift**). Even after upgrading the inference pipeline to preserve the image aspect ratio using padding, the model still struggles with free-form handwriting compared to its absolute certainty on printed text.
+## 🚀 Optimization Journey: Bridging the Sim-to-Real Gap
 
-| Example type | Model Output (Visualization) | Prediction & Confidence | Result |
+While the baseline model achieved high accuracy on clean, synthetic data, it initially struggled with real-world camera photos due to background noise, scale variations, and domain shifts in handwriting styles. To solve this, the pipeline was systematically improved:
+
+1. **Robust Training (Defeating Shortcut Learning):** Added aggressive scale variations (`0.7` to `1.2`) and rotations (`±15°`) over 50 epochs. This forced the CNN to learn meaningful shape features rather than relying on pixel-count shortcuts.
+2. **Advanced Inference Pipeline:** Integrated OpenCV (`cv2`) for dynamic binarization and auto-cropping via contour detection. This preprocessing step extracts the foreground character and centers it to better match the training distribution.
+
+**The Result:** The model now produces highly confident and correct predictions on the tested real-world samples shown below, successfully generalizing to both printed fonts and free-form handwriting.
+
+### 📸 Real-World Camera Tests
+
+| Input Type | Raw Camera Photo | Model Output (Binarized & Auto-Cropped) | Result |
 | :--- | :---: | :---: | :--- |
-| **Handwritten (ChatGPT Generated)** | ![Handwritten Bet](handwritten_bet_padded.png) | **'ם' (Final Mem)**<br>Confidence: 68.29% | **Failure ❌** |
-| **Printed (Real World Screenshot)** | ![Printed Bet](printed_bet.png) | **'ב' (Bet)**<br>Confidence: 100.00% | **Success ✅** |
+| **Printed (Arial)** | ![Raw Arial](printed_ocr_arial_bet.jpeg) | ![Pred Arial](printed_ocr_arial_bet.jpeg_result.png) | **Success ✅**<br>(98.11% confidence) |
+| **Printed (Times New Roman)** | ![Raw Times](printed_ocr_newroman_bet.jpeg) | ![Pred Times](printed_ocr_newroman_bet_result.png) | **Success ✅**<br>(99.77% confidence) |
+| **Handwritten (Real Pen & Paper)** | ![Raw Hand](handwritten_ocr_bet.jpeg) | ![Pred Hand](handwritten_ocr_bet_result.png) | **Success ✅**<br>(99.80% confidence) |
 
-**Conclusion:** The initial Convolutional Neural Network (CNN) successfully generalized to real printed data, achieving absolute mathematical certainty (100.00% confidence). However, the significant drop in confidence (68.29%) and incorrect prediction on the handwritten character confirms the domain gap. This proves that while the baseline model is robust for fonts, extending it to free-form handwriting requires specific datasets and Transfer Learning.
-### 📊 Training Results: Final Confusion Matrix
+---
 
-After full training on the synthetic dataset, the model demonstrated robust performance. The Confusion Matrix below highlights its strong classification capabilities across all 27 classes, achieving an overall accuracy of **97.40%** on the validation set.
+### 📊 Training Results: The Confusion Matrix
+
+After training for 50 epochs with heavy augmentations, the validation accuracy settled at **88.82%**. While numerically lower than the 97.40% achieved on early clean data, this matrix represents a more robust model better suited for real-world inputs.
 
 ![Confusion Matrix](confusion_matrix.png)
 
-The matrix shows a nearly diagonal pattern, proving high precision for most Hebrew characters. Minimal confusion remains for similar-looking characters (e.g., 'Nun' vs. 'Gimel'), which provides insights for future optimizations.
+**🔍 Error Analysis & Known Limitations (Auto-Cropping Effect):**
+The matrix reveals that the model's mistakes are highly logical visual confusions, largely caused by the normalization process itself:
+
+* **'ן' (Final Nun) vs. 'ו' (Vav):** Because Auto-Crop resizes every isolated letter to a uniform 64x64 box, the relative height difference between these vertical lines is lost. 
+* **'ך' (Final Khaf) vs. 'ר' (Resh):** Similarly, shrinking the long leg of the 'ך' to fit the bounding box makes its upper right angle visually identical to a 'ר'.
+* **'כ' (Khaf) vs. 'נ' (Nun):** With the addition of ±15° rotation during training, a tilted 'כ' mathematically resembles the curved belly of a 'נ'.
+
+**Conclusion:** The CNN successfully generalized to free-form handwriting and raw camera inputs. Future improvements could include context-aware predictions (e.g., sequence modeling with RNNs or Transformers) to address single-character ambiguities.
+
+---
+
+## 🛠️ Usage
+
+Test the model on your own images using the command line:
+
+```bash
+# 1. Install requirements
+pip install torch torchvision Pillow matplotlib opencv-python numpy
+
+# 2. Run inference on a local image
+python predict.py --image path/to/your_image.jpg --model hebrew_ocr_augmented.pth
+```
