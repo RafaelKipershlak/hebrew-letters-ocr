@@ -29,7 +29,7 @@ While the baseline model achieved high accuracy on clean, synthetic data, it ini
 
 | Input Type | Raw Camera Photo | Model Output (Binarized & Auto-Cropped) | Result |
 | :--- | :---: | :---: | :--- |
-| **Printed (Arial)** | ![Raw Arial](printed_ocr_arial_bet.jpeg) | ![Pred Arial](printed_ocr_arial_bet.jpeg_result.png) | **Success ✅**<br>(98.11% confidence) |
+| **Printed (Arial)** | ![Raw Arial](printed_ocr_arial_bet.jpeg) | ![Pred Arial](printed_ocr_arial_bet_result.png) | **Success ✅**<br>(98.11% confidence) |
 | **Printed (Times New Roman)** | ![Raw Times](printed_ocr_newroman_bet.jpeg) | ![Pred Times](printed_ocr_newroman_bet_result.png) | **Success ✅**<br>(99.77% confidence) |
 | **Handwritten (Real Pen & Paper)** | ![Raw Hand](handwritten_ocr_bet.jpeg) | ![Pred Hand](handwritten_ocr_bet_result.png) | **Success ✅**<br>(99.80% confidence) |
 
