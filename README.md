@@ -47,8 +47,7 @@ The matrix reveals that the model's mistakes are highly logical visual confusion
 * **Final Nun ('ן') vs. Vav ('ו'):** Because Auto-Crop resizes every isolated letter to a uniform 64x64 box, the relative height difference between these vertical lines is lost. 
 
 * **Final Khaf ('ך') vs. Resh ('ר'):** Similarly, shrinking the long leg of the 'ך' to fit the bounding box makes its upper right angle visually identical to a 'ר'.
-* **Khaf ('כ') vs. Nun ('נ'):** With the addition of ±15° rotation during training, a tilted 'כ' mathematically resembles the curved belly of a 'נ'
-
+* **Khaf ('כ') vs. Nun ('נ'):** With the addition of ±15° rotation during training, a tilted 'כ' mathematically resembles the curved belly of a 'נ'.
 
 **Conclusion:** The CNN successfully generalized to free-form handwriting and raw camera inputs. Future improvements could include context-aware predictions (e.g., sequence modeling with RNNs or Transformers) to address single-character ambiguities.
 
