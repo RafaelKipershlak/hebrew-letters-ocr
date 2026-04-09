@@ -44,9 +44,11 @@ After training for 50 epochs with heavy augmentations, the validation accuracy s
 **🔍 Error Analysis & Known Limitations (Auto-Cropping Effect):**
 The matrix reveals that the model's mistakes are highly logical visual confusions, largely caused by the normalization process itself:
 
-* **'ן' (Final Nun) vs. 'ו' (Vav):** Because Auto-Crop resizes every isolated letter to a uniform 64x64 box, the relative height difference between these vertical lines is lost. 
-* **'ך' (Final Khaf) vs. 'ר' (Resh):** Similarly, shrinking the long leg of the 'ך' to fit the bounding box makes its upper right angle visually identical to a 'ר'.
-* **'כ' (Khaf) vs. 'נ' (Nun):** With the addition of ±15° rotation during training, a tilted 'כ' mathematically resembles the curved belly of a 'נ'.
+* **Final Nun ('ן') vs. Vav ('ו'):** Because Auto-Crop resizes every isolated letter to a uniform 64x64 box, the relative height difference between these vertical lines is lost. 
+
+* **Final Khaf ('ך') vs. Resh ('ר'):** Similarly, shrinking the long leg of the 'ך' to fit the bounding box makes its upper right angle visually identical to a 'ר'.
+* **Khaf ('כ') vs. Nun ('נ'):** With the addition of ±15° rotation during training, a tilted 'כ' mathematically resembles the curved belly of a 'נ'
+
 
 **Conclusion:** The CNN successfully generalized to free-form handwriting and raw camera inputs. Future improvements could include context-aware predictions (e.g., sequence modeling with RNNs or Transformers) to address single-character ambiguities.
 
