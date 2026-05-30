@@ -29,9 +29,9 @@ While the baseline model achieved high accuracy on clean, synthetic data, it ini
 
 | Input Type | Raw Camera Photo | Model Output (Binarized & Auto-Cropped) | Result |
 | :--- | :---: | :---: | :--- |
-| **Printed (Arial)** | ![Raw Arial](printed_ocr_arial_bet.jpeg) | ![Pred Arial](printed_ocr_arial_bet_result.png) | **Success **<br>(98.11% confidence) |
-| **Printed (Times New Roman)** | ![Raw Times](printed_ocr_newroman_bet.jpeg) | ![Pred Times](printed_ocr_newroman_bet_result.png) | **Success **<br>(99.77% confidence) |
-| **Handwritten (Real Pen & Paper)** | ![Raw Hand](handwritten_ocr_bet.jpeg) | ![Pred Hand](handwritten_ocr_bet_result.png) | **Success **<br>(99.80% confidence) |
+| **Printed (Arial)** | ![Raw Arial](printed_ocr_arial_bet.jpeg) | ![Pred Arial](printed_ocr_arial_bet_result.png) | **Success** <br>(98.11% confidence) |
+| **Printed (Times New Roman)** | ![Raw Times](printed_ocr_newroman_bet.jpeg) | ![Pred Times](printed_ocr_newroman_bet_result.png) | **Success**<br>(99.77% confidence) |
+| **Handwritten (Real Pen & Paper)** | ![Raw Hand](handwritten_ocr_bet.jpeg) | ![Pred Hand](handwritten_ocr_bet_result.png) | **Success** <br>(99.80% confidence) |
 
 ---
 
@@ -41,7 +41,7 @@ After training for 50 epochs with heavy augmentations, the validation accuracy s
 
 ![Confusion Matrix](confusion_matrix.png)
 
-** Error Analysis & Known Limitations (Auto-Cropping Effect):**
+**Error Analysis & Known Limitations (Auto-Cropping Effect):**
 The matrix reveals that the model's mistakes are highly logical visual confusions, largely caused by the normalization process itself:
 
 * **Final Nun ('ן') vs. Vav ('ו'):** Because Auto-Crop resizes every isolated letter to a uniform 64x64 box, the relative height difference between these vertical lines is lost. 
