@@ -1,7 +1,15 @@
 # Hebrew Characters OCR
 
-A PyTorch-based Convolutional Neural Network (CNN) for recognizing Hebrew characters. The model was initially trained on synthetically generated Hebrew characters (using multiple fonts and randomized augmentations) and later optimized for real-world robustness.
+A PyTorch-based Convolutional Neural Network (CNN) for recognizing Hebrew characters. The model was initially trained on a synthetically generated dataset (created using multiple fonts) and later optimized for real-world robustness using on-the-fly data augmentations.
 
+##  Synthetic Dataset
+
+This project is part of a larger OCR system that includes a dedicated synthetic dataset generator.
+
+The training data consists of synthetically generated Hebrew characters created using multiple fonts to produce clean base samples. During training, randomized augmentations (e.g., scaling and rotation) were applied on-the-fly to improve robustness and prevent overfitting.
+
+Dataset generator repository: https://github.com/RafaelKipershlak/hebrew-letters-gen
+ 
 ##  Key Features
 * **Sim-to-Real Pipeline:** Bridges the gap between synthetic training data and real-world, noisy camera images.
 * **Advanced Preprocessing:** Uses OpenCV contour detection for dynamic binarization and automatic cropping based on contour detection.
